@@ -139,8 +139,8 @@ for sv in [np.uint8(0), np.uint8(1)]:
 
 fin = pd.concat(ofin, copy=False)
 
-singletones_control = sys.argv[1]
-if singletones_control == "yessingletones":
+singletons_control = sys.argv[1]
+if singletons_control == "yessingletons":
     fin.reset_index(drop=True, inplace=True)
     mc = ['0','1','2','3','4','5','6']
     left = pd.merge(allr.reset_index(drop=True)[mc], fin, on=mc, how='left')
@@ -159,7 +159,7 @@ if singletones_control == "yessingletones":
     fin.sort_values(['0','1'], inplace=True)
     fin.reset_index(drop = True, inplace=True)
     
-    firstsingletone = False
+    firstsingleton = False
     for index, row in fin.iterrows():
         k = row[7]
         if index == len(fin) - 1:
@@ -178,8 +178,8 @@ if singletones_control == "yessingletones":
         if index == 0 and k == -1:
             fin.at[index, 'k'] = 1
             last_k = 2
-            firstsingletone = True
-        if index == 0 and firstsingletone == False:
+            firstsingleton = True
+        if index == 0 and firstsingleton == False:
             last_k = 1
         if index > 0:
             if k == -1:
@@ -197,7 +197,7 @@ if singletones_control == "yessingletones":
                     fin.at[index, 'k'] = last_k
 
 
-if singletones_control == "nosingletones":
+if singletons_control == "nosingletons":
     fin['3'] = field_3_encoder.inverse_transform(fin['3'])
     fin['4'] = field_4_encoder.inverse_transform(fin['4'])
     fin['5'] = field_5_encoder.inverse_transform(fin['5'])
@@ -208,10 +208,10 @@ dataset_groups = pd.read_csv("./samples_study.txt", sep = "\t")
 
 fin2 = fin.merge(dataset_groups[['sampleID', 'study']], left_on='6', right_on='sampleID').drop('sampleID', axis='columns')
 
-if singletones_control == "yessingletones":
+if singletons_control == "yessingletons":
     df = pd.DataFrame(fin2)
     df.to_csv("./samples_merged_flat.txt", index = False, header = False, sep="\t")
-if singletones_control == "nosingletones":
+if singletons_control == "nosingletons":
     df = pd.DataFrame(fin2)
     df.to_csv("./samples_merged_NOSINGLE_flat.txt", index = False, header = False, sep="\t")
 
@@ -222,15 +222,15 @@ def formatter(common_variants):
     samples = []
     result = ()
     for index in range(len(common_variants)):
-        singletone = False
+        singleton = False
         shared_SV = common_variants[index][7]
         starts.append(int(common_variants[index][1]))
         ends.append(int(common_variants[index][2]))
         samples.append(common_variants[index][6])
         samplesstring.append('_'.join(common_variants[index][0:7]))
         if index == len(common_variants) -1:
-            if shared_SV in k_singletones:
-                singletone = True
+            if shared_SV in k_singletons:
+                singleton = True
                 startline = common_variants[index][0:4]
                 sample = common_variants[index][6]
                 samplestring = '_'.join(common_variants[index][0:7])
@@ -245,7 +245,7 @@ def formatter(common_variants):
                 startline[1] = minstart
                 startline[2] = maxend
             for name in listsamples:
-                if not singletone:
+                if not singleton:
                     if name in samples:
                         samples2 = [x.split("_")[7] for x in samplesstring]
                         selectindex = samples.index(name)
@@ -253,17 +253,17 @@ def formatter(common_variants):
                         startline.append(samplesstring[selectindex])
                     else:
                         startline.append('0/0')
-                if singletone:
+                if singleton:
                     if name != sample:
                         startline.append('0/0')
                     else:
                         startline.append(samplestring)
             break    
-        if shared_SV == common_variants[index + 1][7] and shared_SV not in k_singletones:
+        if shared_SV == common_variants[index + 1][7] and shared_SV not in k_singletons:
             continue
         else:
-            if shared_SV in k_singletones:
-                singletone = True
+            if shared_SV in k_singletons:
+                singleton = True
                 startline = common_variants[index][0:4]
                 sample = common_variants[index][6]
                 samplestring = '_'.join(common_variants[index][0:7])
@@ -279,7 +279,7 @@ def formatter(common_variants):
                 startline[2] = maxend
 
         for name in listsamples:
-            if not singletone:
+            if not singleton:
                 if name in samples:
                     samples2 = [x.split("_")[7] for x in samplesstring]
                     selectindex = samples.index(name)
@@ -287,7 +287,7 @@ def formatter(common_variants):
                     startline.append(samplesstring[selectindex])
                 else:
                     startline.append('0/0')
-            if singletone:
+            if singleton:
                 if name != sample:
                     startline.append('0/0')
                 else:
